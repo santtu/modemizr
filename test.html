@@ -1,43 +1,50 @@
 <html>
   <head>
-    <script type="text/javascript" src="jquery-2.1.4.min.js"></script>
     <script type="text/javascript" src="modemizr.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="style.css" />
   </head>
   <body>
+    <div id="output" class=""></div>
+    <!-- <div id="output"></div> -->
 
-    <pre id="output"></pre>
+    <div id="text">
+      <pre>Lorem <b>ipsum dolor sit amet</b>, consectetur <span style="background: black; color: white;">adipiscing elit. Ut et
+commodo nisl</span>. Quisque commodo elit sit amet gravida luctus. </pre>
 
-<pre id="text">Lorem ipsum dolor sit amet, consectetur adipiscing
-elit. Ut et commodo nisl. Quisque commodo elit sit amet gravida
-luctus. Praesent eget laoreet lectus. Cras quis odio purus. Sed
-finibus condimentum tempor. Donec semper viverra risus in
-fermentum. Maecenas euismod felis id quam tincidunt sodales. Donec a
-metus at quam eleifend malesuada efficitur a arcu. Sed mattis in elit
-tempus tincidunt. Aenean at purus ut arcu fermentum semper. In
-ullamcorper accumsan ligula. Duis tristique faucibus lectus vel
-fermentum. Morbi congue gravida finibus. Maecenas eu consequat odio,
-ac pellentesque ante. Proin vitae justo fermentum, porttitor massa ac,
-tempor urna.
+    <p>Praesent eget
+laoreet <a href="https://www.google.com/search?q=lectus">lectus</a>. <i>Cras
+quis odio purus. Sed finibus condimentum tempor.</i> Donec semper
+viverra risus in fermentum. Maecenas euismod felis id quam tincidunt
+sodales. Donec a metus at quam eleifend malesuada efficitur a
+arcu. Sed mattis in elit tempus tincidunt. Aenean at purus ut arcu
+fermentum semper. In ullamcorper accumsan ligula. Duis tristique
+faucibus lectus vel fermentum. Morbi congue gravida finibus. Maecenas
+eu consequat odio, ac pellentesque ante. Proin vitae justo fermentum,
+      porttitor massa ac, tempor urna.</p>
 
-Suspendisse eget fringilla nibh. Sed pulvinar nisi non ipsum sodales
-venenatis. Proin quis scelerisque dolor. Phasellus consequat a leo sit
-amet ultricies. Pellentesque tempus quam congue, suscipit elit
+    <!-- <img width="20%" src="https://upload.wikimedia.org/wikipedia/commons/a/af/Bonsai_IMG_6426.jpg"> -->
+
+    <p>Suspendisse eget fringilla nibh. Sed pulvinar nisi non ipsum
+sodales venenatis. Proin quis scelerisque dolor. Phasellus consequat a
+leo sit amet ultricies. Pellentesque tempus quam congue, suscipit elit
 pulvinar, convallis neque. Duis varius a nulla vel eleifend. Donec
 imperdiet lobortis fermentum. Curabitur placerat, risus sed egestas
 fermentum, tortor mauris finibus risus, ac tempor massa enim a
-turpis. Pellentesque convallis sapien eget volutpat suscipit. Sed nibh
-dui, vehicula vel ligula ut, congue molestie odio. Vestibulum in arcu
-non risus fermentum convallis eu quis nunc. Phasellus id ultricies
-massa, id fringilla elit. Maecenas vehicula pretium elit, eget
-pellentesque velit auctor vel. Quisque non dui eget dolor rutrum
+turpis. <i>Pellentesque convallis sapien eget volutpat suscipit.</i>
+Sed nibh dui, vehicula vel ligula ut, congue molestie odio. Vestibulum
+in arcu non risus fermentum convallis eu quis nunc. Phasellus id
+ultricies massa, id fringilla elit. Maecenas vehicula pretium elit,
+eget pellentesque velit auctor vel. Quisque non dui eget dolor rutrum
 pulvinar faucibus non nisl. Aliquam eleifend risus eu quam posuere
-congue. Vivamus non tellus vitae neque convallis tempus.</pre>
+congue. Vivamus non tellus vitae neque convallis tempus.</p>
+
+    </div>
+
 
     <script>
       var output = document.getElementById("output");
-      var text = document.getElementById("text").textContent
-      modemizr(output, text);
+      var text = document.getElementById("text").childNodes;
+      var m = modemizr(output, text);
       blink(output);
     </script>
 

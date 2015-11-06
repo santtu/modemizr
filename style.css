@@ -1,17 +1,28 @@
 pre {
-    border: 1px dotted gray;
-    padding: 5px;
 }
 
 #text {
-    color: green;
+    border: 1px dashed gray;
+    padding: 2px;
+    margin: 5px;
+    background: #D4F3EA;
 }
 
 #output {
-    color: red;
+    border: 1px dashed gray;
+    padding: 2px;
+    margin: 5px;
 }
 
-#output.blink:after {
-    content: " ";
-    background: black;
+/* #output.blink > :last-child:after { */
+/*     content: "\00a0"; */
+/*     background: black; */
+/* } */
+
+/* #output > :last-child:after { */
+/*     content: "\00a0"; */
+/* } */
+
+.cursor:after {
+    content: "<<<";
 }
