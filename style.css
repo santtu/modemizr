@@ -1,0 +1,17 @@
+pre {
+    border: 1px dotted gray;
+    padding: 5px;
+}
+
+#text {
+    color: green;
+}
+
+#output {
+    color: red;
+}
+
+#output.blink:after {
+    content: " ";
+    background: black;
+}
