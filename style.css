@@ -14,15 +14,9 @@ pre {
     margin: 5px;
 }
 
-/* #output.blink > :last-child:after { */
-/*     content: "\00a0"; */
-/*     background: black; */
-/* } */
-
-/* #output > :last-child:after { */
-/*     content: "\00a0"; */
-/* } */
-
-.cursor:after {
-    content: "<<<";
+.cursor:before {
+    content: ".";
+    background: black;
+    color: black;
+}
 }

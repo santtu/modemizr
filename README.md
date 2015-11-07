@@ -57,8 +57,27 @@ plugin (the values below are the defaults):
     ```javascript
     {
         bps: 300,
+		cursor: false
 	}
 	```
+
+Option | Description
+--- | ---
+`bps` | Initial BPS value for output
+`cursor` | Either `false`, `true` or a string. Adds a cursor `SPAN` element at a place where the cursor is. The element has class of either `"cursor"` or the `cursor` option value if given as a string.
+
+If you want your cursor to be visible you will need to add styling:
+
+
+    ```css
+	.cursor:before { content: "."; background: white; color: white; }
+	```
+
+(I'll be happy if someone can tell me how to get rid of the dot so
+that it works for both DIV and PRE elements and has a matching width
+to the element -- non-breaking space works but results in too wide
+cursor.)
+
 
 ## HTML controls
 

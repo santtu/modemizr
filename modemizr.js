@@ -49,7 +49,7 @@
   Pause = (function() {
     Pause.prototype.ticks = 0;
 
-    function Pause(chars1, secs1, options) {
+    function Pause(chars1, secs1) {
       this.chars = chars1;
       this.secs = secs1;
       this.start = time();
@@ -74,7 +74,15 @@
   })();
 
   Modemizr = (function() {
-    Modemizr.prototype.bps = 1200;
+    Modemizr.prototype.bps = 300;
+
+    Modemizr.prototype.cursor = false;
+
+    Modemizr.prototype.blink = false;
+
+    Modemizr.prototype.timer = null;
+
+    Modemizr.prototype.blinker = null;
 
 
     /*
@@ -83,6 +91,8 @@
      */
 
     Modemizr.prototype.output = [];
+
+    Modemizr.prototype.root = null;
 
 
     /*
@@ -102,8 +112,16 @@
 
     function Modemizr(output, input, options) {
       var child, nodes;
-      if ((options != null) && (options.bps != null)) {
-        this.bps = options.bps;
+      if (options != null) {
+        if (options.bps != null) {
+          this.bps = options.bps;
+        }
+        if (options.cursor != null) {
+          this.cursor = options.cursor;
+        }
+        if (options.blink != null) {
+          this.blink = options.blink;
+        }
       }
       if (output == null) {
         return;
@@ -112,6 +130,7 @@
         input = output;
       }
       this.output = [output];
+      this.root = output;
 
       /*
        * If input is the same as output, grab node content first and then
@@ -146,7 +165,7 @@
     };
 
     Modemizr.prototype.start = function() {
-      var interval;
+      var blink_interval, interval;
       if (this.timer != null) {
         return;
       }
@@ -157,15 +176,32 @@
           return _this.tick();
         };
       })(this)), interval);
+      if (this.blink) {
+        blink_interval = parseFloat(this.blink === this.blink) ? this.blink : 500.0;
+        this.blinker = setInterval(((function(_this) {
+          return function() {
+            return _this.blinks();
+          };
+        })(this)), blink_interval);
+      }
       return this;
     };
 
     Modemizr.prototype.stop = function() {
       if (this.timer != null) {
         clearInterval(this.timer);
+        this.timer = null;
       }
-      this.timer = null;
+      if (this.blinker != null) {
+        clearInterval(this.blinker);
+        this.blinker = null;
+        this.root.classList.remove('blink');
+      }
       return this;
+    };
+
+    Modemizr.prototype.blinks = function() {
+      return this.root.classList.toggle('blink');
     };
 
 
@@ -200,22 +236,82 @@
     };
 
     Modemizr.prototype.pop_both = function() {
-      this.output.pop();
+      this.pop_output();
+      return this.pop_input();
+    };
+
+    Modemizr.prototype.pop_input = function() {
       return this.input.pop();
     };
 
     Modemizr.prototype.pop_output = function() {
+      if (this.cursor) {
+        this.pop_cursor();
+      }
       return this.output.pop();
     };
 
+    Modemizr.prototype.current_output = function() {
+      return this.output[this.output.length - 1];
+    };
+
+
+    /*
+     * Remove cursor from the topmost output element.
+     */
+
+    Modemizr.prototype.pop_cursor = function() {
+      var cursor, cursors, output, results;
+      output = this.current_output();
+      if (output.getElementsByClassName != null) {
+        cursors = output.getElementsByClassName("cursor");
+        results = [];
+        while (cursors.length > 0) {
+          cursor = cursors[0];
+          results.push(cursor.remove());
+        }
+        return results;
+      }
+    };
+
+
+    /*
+     * If the topmost element is a text node, add cursor **after** it (in
+     * its parent child node list). For any other element type we don't
+     * do anything as we are guaranteed to get a text node eventually
+     * here.
+     */
+
+    Modemizr.prototype.push_cursor = function() {
+      var cursor, output;
+      output = this.current_output();
+      if (((output.nodeType != null) && output.nodeType === 3) || (output instanceof Pause)) {
+        cursor = document.createElement("span");
+        cursor.className = (stringp(this.cursor)) && this.cursor || "cursor";
+        return output.parentNode.appendChild(cursor);
+      }
+    };
+
     Modemizr.prototype.push_both = function(node, content) {
+      if (this.cursor) {
+        this.pop_cursor();
+      }
       this.output[this.output.length - 1].appendChild(node);
       this.output.push(node);
-      return this.input.push(content);
+      this.input.push(content);
+      if (this.cursor) {
+        return this.push_cursor();
+      }
     };
 
     Modemizr.prototype.push_output = function(node) {
-      return this.output.push(node);
+      if (this.cursor) {
+        this.pop_cursor();
+      }
+      this.output.push(node);
+      if (this.cursor) {
+        return this.push_cursor();
+      }
     };
 
 
@@ -234,9 +330,11 @@
      */
 
     Modemizr.prototype.step = function() {
-      var bps, chars, current, input, node, output, ref, secs;
+      var bps, chars, current, input, node, output, pause, ref, secs;
       if (this.input.length === 0 || this.output.length === 0) {
-        return;
+        while (this.output.length) {
+          this.pop_output();
+        }
       }
       output = this.output[this.output.length - 1];
       input = this.input[this.input.length - 1];
@@ -306,7 +404,9 @@
         chars = node.getAttribute('data-pause-chars');
         secs = node.getAttribute('data-pause-secs');
         if ((chars != null) || (secs != null)) {
-          this.push_output(new Pause((chars != null) && parseFloat(chars) || null, (secs != null) && parseFloat(secs) || null));
+          pause = new Pause((chars != null) && parseFloat(chars) || null, (secs != null) && parseFloat(secs) || null);
+          pause.parentNode = node;
+          this.push_output(pause);
         }
         bps = node.getAttribute('data-bps');
         if (bps != null) {

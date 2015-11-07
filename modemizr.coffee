@@ -38,7 +38,7 @@ time = () -> (new Date()).getTime()
 class Pause
   ticks: 0
 
-  constructor: (@chars, @secs, options) ->
+  constructor: (@chars, @secs) ->
     @start = time()
     @done = @donep()
 
@@ -57,13 +57,18 @@ class Pause
 
 
 class Modemizr
-  bps: 1200
+  bps: 300
+  cursor: false
+  blink: false
+  timer: null
+  blinker: null
 
   ###
   # Output is a stack of output elements. It starts with the initial
   # `output` container given at init.
   ###
   output: []
+  root: null
 
   ###
   # Input is an stack of arrays. When an empty array is encountered,
@@ -78,8 +83,15 @@ class Modemizr
   # given then its **child nodes** are used, not the node itself.
   ###
   constructor: (output, input, options) ->
-    if options? and options.bps?
-      @bps = options.bps
+    if options?
+      if options.bps?
+        @bps = options.bps
+
+      if options.cursor?
+        @cursor = options.cursor
+
+      if options.blink?
+        @blink = options.blink
 
     if not output?
       return
@@ -88,6 +100,7 @@ class Modemizr
       input = output
 
     @output = [output]
+    @root = output
 
     ###
     # If input is the same as output, grab node content first and then
@@ -123,14 +136,28 @@ class Modemizr
     interval = 1000.0 / (@bps / 10.0)
     @last = (new Date()).getTime()
     @timer = setInterval (() => @tick()), interval
+
+    if @blink
+      blink_interval = if parseFloat @blink == @blink then @blink else 500.0
+      @blinker = setInterval (() => @blinks()), blink_interval
+
     @
 
   stop: () ->
     if @timer?
       clearInterval @timer
+      @timer = null
 
-    @timer = null
+    if @blinker?
+      clearInterval @blinker
+      @blinker = null
+      @root.classList.remove 'blink'
+
     @
+
+  blinks: () ->
+    @root.classList.toggle 'blink'
+
 
   ###
   # Count the number of characters that shold be output to keep the
@@ -155,19 +182,63 @@ class Modemizr
         @step()
 
   pop_both: () ->
-    @output.pop()
-    @input.pop()
+    @pop_output()
+    @pop_input()
+
+  pop_input: () -> @input.pop()
 
   pop_output: () ->
+    if @cursor
+      @pop_cursor()
+
     @output.pop()
 
+  current_output: () ->
+    @output[@output.length - 1]
+
+  ###
+  # Remove cursor from the topmost output element.
+  ###
+  pop_cursor: () ->
+    output = @current_output()
+    if output.getElementsByClassName?
+      cursors = output.getElementsByClassName("cursor")
+      while cursors.length > 0
+        cursor = cursors[0]
+        cursor.remove()
+
+  ###
+  # If the topmost element is a text node, add cursor **after** it (in
+  # its parent child node list). For any other element type we don't
+  # do anything as we are guaranteed to get a text node eventually
+  # here.
+  ###
+  push_cursor: () ->
+    output = @current_output()
+    if (output.nodeType? and output.nodeType == 3) or (output instanceof Pause)
+      cursor = document.createElement "span"
+      cursor.className = (stringp @cursor) and @cursor or "cursor"
+      output.parentNode.appendChild cursor
+
   push_both: (node, content) ->
+    if @cursor
+      @pop_cursor()
+
     @output[@output.length - 1].appendChild node
     @output.push node
     @input.push content
 
+    if @cursor
+     @push_cursor()
+
   push_output: (node) ->
+    if @cursor
+      @pop_cursor()
+
     @output.push node
+
+    if @cursor
+      @push_cursor()
 
   ###
   # Remove the current head element of the top input. Remember, input
@@ -181,7 +252,8 @@ class Modemizr
   ###
   step: () ->
     if @input.length == 0 or @output.length == 0
-      return
+      while @output.length
+        @pop_output()
 
     output = @output[@output.length - 1]
     input = @input[@input.length - 1]
@@ -261,8 +333,10 @@ class Modemizr
       secs = node.getAttribute 'data-pause-secs'
 
       if chars? or secs?
-        @push_output new Pause(chars? and parseFloat(chars) or null,
+        pause = new Pause(chars? and parseFloat(chars) or null,
           secs? and parseFloat(secs) or null)
+        pause.parentNode = node # fake it
+        @push_output pause
 
       bps = node.getAttribute 'data-bps'
 

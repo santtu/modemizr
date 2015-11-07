@@ -22,3 +22,19 @@ pre {
     padding: 10px;
     margin: 5px 0;
 }
+
+.blink .cursor:before {
+    content: "";
+}
+
+.cursor:before {
+    content: "_";
+    background: white;
+    color: white;
+}
+
+.altcursor:before {
+    content: ".";
+    background: red;
+    color: red;
+}
