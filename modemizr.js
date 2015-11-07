@@ -285,7 +285,8 @@
       }
       this.output = [output];
       this.root = output;
-      if ((options != null) && (options.show != null) && options.show) {
+      console.log("options", options);
+      if (!((options != null) && (options.show != null)) || options.show) {
         if (this.root.style.display === "none") {
           this.root.style.display = "block";
         }
