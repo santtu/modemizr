@@ -31,6 +31,29 @@ stringp = (s) -> typeof s == 'string' or s instanceof String
 log = (args...) ->
 #  console.log.apply(console, args)
 
+time = () -> (new Date()).getTime()
+
+class Pause
+  ticks: 0
+
+  constructor: (@chars, @secs) ->
+    @start = time()
+    @done = @donep()
+
+  donep: () ->
+    log "donep: ticks #{@ticks} chars #{@chars} elapsed #{time() - @start} secs #{@secs}"
+
+    pending = (@chars? and @ticks < @chars) or
+      (@secs? and (time() - @start) < (1000.0 * @secs))
+
+    log "pending: #{pending}"
+    not pending
+
+  tick: () ->
+    @ticks++
+    @done = @donep()
+
+
 class Modemizr
   bps: 1200
 
@@ -71,11 +94,8 @@ class Modemizr
     chars = Math.round(elapsed / (1000.0 / (@bps / 10.0)))
     chars
 
-  finished: () ->
-    @input.length == 0
-
   tick: () ->
-    if @finished()
+    if @input.length == 0
       @stop()
       return
 
@@ -86,27 +106,44 @@ class Modemizr
     while chars-- > 0
       @step()
 
-
   pop_both: () ->
     @output.pop()
     @input.pop()
 
+  pop_output: () ->
+    @output.pop()
+
   push_both: (node, content) ->
     @output[@output.length - 1].appendChild node
     @output.push node
-
-    @input[@input.length - 1].shift()
     @input.push content
 
+  push_output: (node) ->
+    @output.push node
+
+  # Remove the current head element of the top input. Remember, input
+  # is a stack of arrays.
   drop_input: () ->
     @input[@input.length - 1].shift()
 
+  # Produce output of "one character" or its equivalent.
   step: () ->
     if @input.length == 0 or @output.length == 0
       return
 
     output = @output[@output.length - 1]
     input = @input[@input.length - 1]
+
+    if output instanceof Pause
+      log "pausing"
+
+      output.tick()
+
+      if not output.done
+        return
+
+      @pop_output()
+      return @step
 
     if input.length == 0
       @pop_both()
@@ -131,6 +168,10 @@ class Modemizr
 
     log "not string"
 
+    # All other types get dropped from the input and replaced with
+    # something else (a new element on the stack or ignored.)
+    @drop_input()
+
     # If it is Text node, add an empty text node to output and push
     # its text value to input. This is because we should only append
     # characters to text nodes -- without this styles would pop out of
@@ -141,31 +182,31 @@ class Modemizr
       node = current.cloneNode()
       node.textContent = ""
 
-      # output.appendChild node
-      # @output.push node
-
-      # input.shift()
-      # @input.push [current.textContent]
       @push_both node, [current.textContent]
-
       return @step()
 
     if current.nodeType == 8
       log "comment node"
-      @drop_input()
       return @step()
 
     # If it is a formatting style element then recurse into it.
-    if current.tagName in ['B', 'I', 'EMPH', 'SPAN', 'DIV', 'P', 'PRE', 'A', 'IMG']
+    if current.tagName in ['B', 'I', 'EMPH', 'SPAN', 'DIV', 'P', 'PRE', 'A', 'IMG', 'BR']
       log "formatting node"
 
       node = current.cloneNode()
+
       @push_both node, Array.prototype.slice.call current.childNodes
+
+      chars = node.getAttribute 'data-pause-chars'
+      secs = node.getAttribute 'data-pause-secs'
+
+      if chars? or secs?
+        @push_output new Pause(chars? and parseFloat(chars) or null,
+          secs? and parseFloat(secs) or null)
 
       return @step()
 
     console.log "Unrecognized node type #{current.nodeType} with tag #{current.tagName}, skipping."
-    @drop_input()
     return @step()
 
 
