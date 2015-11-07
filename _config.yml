@@ -3,7 +3,7 @@ email: santtu@iki.fi
 description: >
   Simple javascript library that simulates the "old BBS with slow
   modems" effect on HTML pages.
-baseurl: ""
+baseurl: "/modemizr"
 url: "https://santtu.github.io/modemizr"
 twitter_username: paavolainen
 github_username:  santtu
