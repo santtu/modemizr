@@ -1,5 +1,6 @@
 # -*- tab-width: 2 -*-
 
+###
 # Text is easy to handle, but what to do with HTML elements?
 #
 # One could of course ignore any formatting and just use
@@ -26,6 +27,7 @@
 #
 # For deeper structure this needs of course stacks to keep the state.
 #
+###
 
 stringp = (s) -> typeof s == 'string' or s instanceof String
 log = (args...) ->
@@ -57,38 +59,55 @@ class Pause
 class Modemizr
   bps: 1200
 
+  ###
   # Output is a stack of output elements. It starts with the initial
   # `output` container given at init.
+  ###
   output: []
 
+  ###
   # Input is an stack of arrays. When an empty array is encountered,
   # then output value is removed. Similarly if output needs to
   # recurse, then a new input array is pushed in.
+  ###
   input: []
 
+  ###
+  # Output should always be a single node, input can either be an
+  # array of elements, or a single element. If a single element is
+  # given then its **child nodes** are used, not the node itself.
+  ###
   constructor: (output, input) ->
     @output = [output]
+    if not (input instanceof Array)
+      input = input.childNodes
     @input = [Array.prototype.slice.call input]
     log "output", @output, "input", @input
 
+  restart: () ->
+    @stop()
+    @start()
+
   start: () ->
-    if @timer
+    if @timer?
       return
 
     interval = 1000.0 / (@bps / 10.0)
-    @last = (new Date).getTime()
+    @last = (new Date()).getTime()
     @timer = setInterval (() => @tick()), interval
     @
 
   stop: () ->
-    if @timer
+    if @timer?
       clearInterval @timer
 
     @timer = null
     @
 
+  ###
   # Count the number of characters that shold be output to keep the
   # BPS value correct since `last` when now is `now`.
+  ###
   countCharsNeeded: (last, now) ->
     elapsed = now - last
     chars = Math.round(elapsed / (1000.0 / (@bps / 10.0)))
@@ -99,12 +118,13 @@ class Modemizr
       @stop()
       return
 
-    now = (new Date).getTime()
+    now = (new Date()).getTime()
     chars = @countCharsNeeded(@last, now)
-    @last = now
 
-    while chars-- > 0
-      @step()
+    if chars > 0
+      @last = now
+      while chars-- > 0
+        @step()
 
   pop_both: () ->
     @output.pop()
@@ -121,12 +141,16 @@ class Modemizr
   push_output: (node) ->
     @output.push node
 
+  ###
   # Remove the current head element of the top input. Remember, input
   # is a stack of arrays.
+  ###
   drop_input: () ->
     @input[@input.length - 1].shift()
 
+  ###
   # Produce output of "one character" or its equivalent.
+  ###
   step: () ->
     if @input.length == 0 or @output.length == 0
       return
@@ -152,8 +176,10 @@ class Modemizr
     current = input[0]
     log "current", current
 
+    ###
     # If it is a plain string, easy -- pick one character and append
     # to output (it will always be a Text element at this point).
+    ###
     if stringp current
       if current.length == 0
         @drop_input()
@@ -168,14 +194,18 @@ class Modemizr
 
     log "not string"
 
+    ###
     # All other types get dropped from the input and replaced with
     # something else (a new element on the stack or ignored.)
+    ###
     @drop_input()
 
+    ###
     # If it is Text node, add an empty text node to output and push
     # its text value to input. This is because we should only append
     # characters to text nodes -- without this styles would pop out of
     # existence at the end of an element.
+    ###
     if current.nodeType == 3
       log "string node"
 
@@ -189,8 +219,10 @@ class Modemizr
       log "comment node"
       return @step()
 
+    ###
     # If it is a formatting style element then recurse into it.
-    if current.tagName in ['B', 'I', 'EMPH', 'SPAN', 'DIV', 'P', 'PRE', 'A', 'IMG', 'BR']
+    ###
+    if current.tagName in ['B', 'I', 'TT', 'EMPH', 'SPAN', 'DIV', 'P', 'PRE', 'A', 'IMG', 'BR', 'H1', 'H2', 'H3', 'H4', 'H5', 'DL', 'DT', 'DD', 'OT', 'OL', 'LI', 'UL']
       log "formatting node"
 
       node = current.cloneNode()
@@ -203,6 +235,12 @@ class Modemizr
       if chars? or secs?
         @push_output new Pause(chars? and parseFloat(chars) or null,
           secs? and parseFloat(secs) or null)
+
+      bps = node.getAttribute 'data-bps'
+
+      if bps?
+        @bps = parseFloat(bps)
+        @restart()
 
       return @step()
 
