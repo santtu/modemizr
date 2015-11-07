@@ -30,8 +30,10 @@
  */
 
 (function() {
-  var $, Modemizr, Pause, log, stringp, time,
-    slice = [].slice;
+  var $, Image, Modemizr, Pause, Processor, log, stringp, time,
+    slice = [].slice,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
   stringp = function(s) {
     return typeof s === 'string' || s instanceof String;
@@ -46,14 +48,83 @@
     return (new Date()).getTime();
   };
 
-  Pause = (function() {
+  Processor = (function() {
+    function Processor(master1, parent1) {
+      this.master = master1;
+      this.parent = parent1;
+    }
+
+    Processor.prototype.done = true;
+
+    return Processor;
+
+  })();
+
+  Image = (function(superClass) {
+    extend(Image, superClass);
+
+    Image.prototype.pos = 0;
+
+    Image.prototype.done = false;
+
+    function Image(master, image) {
+      this.image = image;
+      Image.__super__.constructor.call(this, master, this.image);
+      this.last = time();
+      this.update();
+      this.image.style.overflow = "hidden";
+    }
+
+    Image.prototype.update = function() {
+      var fh, fw, ph, pw;
+      fh = Math.floor(this.pos / this.image.width);
+      ph = fh + 1;
+      fw = this.image.width;
+      pw = this.pos % this.image.width;
+      return this.image.style.webkitClipPath = this.image.style.clipPath = "polygon(0px 0px, " + fw + "px 0px, " + fw + "px " + fh + "px, " + pw + "px " + fh + "px, " + pw + "px " + ph + "px, 0px " + ph + "px)";
+    };
+
+
+    /*
+     * Calculate how many pixels we should show since last update. This
+     * calculates the number of bytes we have accumulated so far and
+     * approximates 8-bit images e.g. one byte per pixel to show.
+     */
+
+    Image.prototype.pixelsPending = function() {
+      var bytes;
+      bytes = (time() - this.last) / 1000.0 * this.master.bps * this.master.imageSpeedup / 10;
+      return bytes;
+    };
+
+    Image.prototype.tick = function() {
+      var pixels;
+      if (this.pos >= this.image.height * this.image.width) {
+        return this.done = true;
+      }
+      pixels = this.pixelsPending();
+      if (pixels > 0) {
+        this.last = time();
+        this.pos += pixels;
+        return this.update();
+      }
+    };
+
+    return Image;
+
+  })(Processor);
+
+  Pause = (function(superClass) {
+    extend(Pause, superClass);
+
     Pause.prototype.ticks = 0;
 
-    function Pause(chars1, secs1) {
+    function Pause(master, parent, chars1, secs1) {
       this.chars = chars1;
       this.secs = secs1;
       this.start = time();
       this.done = this.donep();
+      Pause.__super__.constructor.call(this, master, parent);
     }
 
     Pause.prototype.donep = function() {
@@ -71,18 +142,24 @@
 
     return Pause;
 
-  })();
+  })(Processor);
 
   Modemizr = (function() {
+
+    /*
+     * Default parameters
+     */
     Modemizr.prototype.bps = 300;
 
     Modemizr.prototype.cursor = false;
 
     Modemizr.prototype.blink = false;
 
-    Modemizr.prototype.timer = null;
+    Modemizr.prototype.imageSpeedup = 100;
 
     Modemizr.prototype.blinker = null;
+
+    Modemizr.prototype.timer = null;
 
 
     /*
@@ -121,6 +198,9 @@
         }
         if (options.blink != null) {
           this.blink = options.blink;
+        }
+        if (options.imageSpeedup != null) {
+          this.imageSpeedup = options.imageSpeedup;
         }
       }
       if (output == null) {
@@ -285,7 +365,7 @@
     Modemizr.prototype.push_cursor = function() {
       var cursor, output;
       output = this.current_output();
-      if (((output.nodeType != null) && output.nodeType === 3) || (output instanceof Pause)) {
+      if (((output.nodeType != null) && output.nodeType === 3) || (output instanceof Processor)) {
         cursor = document.createElement("span");
         cursor.className = (stringp(this.cursor)) && this.cursor || "cursor";
         return output.parentNode.appendChild(cursor);
@@ -330,22 +410,24 @@
      */
 
     Modemizr.prototype.step = function() {
-      var bps, chars, current, input, node, output, pause, ref, secs;
+      var bps, chars, current, img, input, node, output, pause, ref, secs;
       if (this.input.length === 0 || this.output.length === 0) {
         while (this.output.length) {
           this.pop_output();
         }
+        this.stop();
+        return;
       }
       output = this.output[this.output.length - 1];
       input = this.input[this.input.length - 1];
-      if (output instanceof Pause) {
-        log("pausing");
+      if (output instanceof Processor) {
+        log("processing");
         output.tick();
         if (!output.done) {
           return;
         }
         this.pop_output();
-        return this.step;
+        return this.step();
       }
       if (input.length === 0) {
         this.pop_both();
@@ -397,21 +479,23 @@
       /*
        * If it is a formatting style element then recurse into it.
        */
+      if ((bps = current.getAttribute('data-bps')) != null) {
+        this.bps = parseFloat(bps);
+        this.restart();
+      }
       if ((ref = current.tagName) === 'B' || ref === 'I' || ref === 'TT' || ref === 'EMPH' || ref === 'SPAN' || ref === 'DIV' || ref === 'P' || ref === 'PRE' || ref === 'A' || ref === 'IMG' || ref === 'BR' || ref === 'H1' || ref === 'H2' || ref === 'H3' || ref === 'H4' || ref === 'H5' || ref === 'DL' || ref === 'DT' || ref === 'DD' || ref === 'OT' || ref === 'OL' || ref === 'LI' || ref === 'UL') {
         log("formatting node");
         node = current.cloneNode();
         this.push_both(node, Array.prototype.slice.call(current.childNodes));
+        if (current.tagName === 'IMG') {
+          img = new Image(this, node);
+          this.push_output(img);
+        }
         chars = node.getAttribute('data-pause-chars');
         secs = node.getAttribute('data-pause-secs');
         if ((chars != null) || (secs != null)) {
-          pause = new Pause((chars != null) && parseFloat(chars) || null, (secs != null) && parseFloat(secs) || null);
-          pause.parentNode = node;
+          pause = new Pause(this, node, (chars != null) && parseFloat(chars) || null, (secs != null) && parseFloat(secs) || null);
           this.push_output(pause);
-        }
-        bps = node.getAttribute('data-bps');
-        if (bps != null) {
-          this.bps = parseFloat(bps);
-          this.restart();
         }
         return this.step();
       }

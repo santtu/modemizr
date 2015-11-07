@@ -35,12 +35,58 @@ log = (args...) ->
 
 time = () -> (new Date()).getTime()
 
-class Pause
+class Processor
+  constructor: (@master, @parent) ->
+  done: true
+
+class Image extends Processor
+  pos: 0
+  done: false
+
+  constructor: (master, @image) ->
+    super master, @image
+
+    @last = time()
+    @update()
+    @image.style.overflow = "hidden"
+
+  update: () ->
+    fh = @pos // @image.width
+    ph = fh + 1
+    fw = @image.width
+    pw = @pos % @image.width
+
+    @image.style.webkitClipPath =
+      @image.style.clipPath = "polygon(0px 0px, #{fw}px 0px, #{fw}px #{fh}px, #{pw}px #{fh}px, #{pw}px #{ph}px, 0px #{ph}px)"
+
+  ###
+  # Calculate how many pixels we should show since last update. This
+  # calculates the number of bytes we have accumulated so far and
+  # approximates 8-bit images e.g. one byte per pixel to show.
+  ###
+  pixelsPending: () ->
+    bytes = (time() - @last) / 1000.0 * @master.bps * @master.imageSpeedup / 10
+    bytes
+
+  tick: () ->
+    if @pos >= @image.height * @image.width
+      return @done = true
+
+    pixels = @pixelsPending()
+
+    if pixels > 0
+      @last = time()
+      @pos += pixels
+      @update()
+
+
+class Pause extends Processor
   ticks: 0
 
-  constructor: (@chars, @secs) ->
+  constructor: (master, parent, @chars, @secs) ->
     @start = time()
     @done = @donep()
+    super master, parent
 
   donep: () ->
     log "donep: ticks #{@ticks} chars #{@chars} elapsed #{time() - @start} secs #{@secs}"
@@ -57,11 +103,16 @@ class Pause
 
 
 class Modemizr
+  ###
+  # Default parameters
+  ###
   bps: 300
   cursor: false
   blink: false
-  timer: null
+  imageSpeedup: 100
+
   blinker: null
+  timer: null
 
   ###
   # Output is a stack of output elements. It starts with the initial
@@ -92,6 +143,9 @@ class Modemizr
 
       if options.blink?
         @blink = options.blink
+
+      if options.imageSpeedup?
+        @imageSpeedup = options.imageSpeedup
 
     if not output?
       return
@@ -215,7 +269,7 @@ class Modemizr
   ###
   push_cursor: () ->
     output = @current_output()
-    if (output.nodeType? and output.nodeType == 3) or (output instanceof Pause)
+    if (output.nodeType? and output.nodeType == 3) or (output instanceof Processor)
       cursor = document.createElement "span"
       cursor.className = (stringp @cursor) and @cursor or "cursor"
       output.parentNode.appendChild cursor
@@ -255,11 +309,14 @@ class Modemizr
       while @output.length
         @pop_output()
 
+      @stop()
+      return
+
     output = @output[@output.length - 1]
     input = @input[@input.length - 1]
 
-    if output instanceof Pause
-      log "pausing"
+    if output instanceof Processor
+      log "processing"
 
       output.tick()
 
@@ -267,7 +324,7 @@ class Modemizr
         return
 
       @pop_output()
-      return @step
+      return @step()
 
     if input.length == 0
       @pop_both()
@@ -322,27 +379,32 @@ class Modemizr
     ###
     # If it is a formatting style element then recurse into it.
     ###
+
+    if (bps = current.getAttribute 'data-bps')?
+      @bps = parseFloat(bps)
+      @restart()
+
     if current.tagName in ['B', 'I', 'TT', 'EMPH', 'SPAN', 'DIV', 'P', 'PRE', 'A', 'IMG', 'BR', 'H1', 'H2', 'H3', 'H4', 'H5', 'DL', 'DT', 'DD', 'OT', 'OL', 'LI', 'UL']
       log "formatting node"
 
+      # Dup the node and put it to processing stack
       node = current.cloneNode()
-
       @push_both node, Array.prototype.slice.call current.childNodes
 
+      # Images require a customer processor
+      if current.tagName == 'IMG'
+        img = new Image(@, node)
+        @push_output img
+
+      # Add a pauser if required
       chars = node.getAttribute 'data-pause-chars'
       secs = node.getAttribute 'data-pause-secs'
 
       if chars? or secs?
-        pause = new Pause(chars? and parseFloat(chars) or null,
+        pause = new Pause(@, node, chars? and parseFloat(chars) or null,
           secs? and parseFloat(secs) or null)
-        pause.parentNode = node # fake it
         @push_output pause
 
-      bps = node.getAttribute 'data-bps'
-
-      if bps?
-        @bps = parseFloat(bps)
-        @restart()
 
       return @step()
 

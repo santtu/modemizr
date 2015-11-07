@@ -57,7 +57,9 @@ plugin (the values below are the defaults):
     ```javascript
     {
         bps: 300,
-		cursor: false
+		cursor: false,
+		blink: false,
+		imageSpeedup: 100
 	}
 	```
 
@@ -65,19 +67,21 @@ Option | Description
 --- | ---
 `bps` | Initial BPS value for output
 `cursor` | Either `false`, `true` or a string. Adds a cursor `SPAN` element at a place where the cursor is. The element has class of either `"cursor"` or the `cursor` option value if given as a string.
+`blink` | Enable blinking cursor by setting `true` or the blink interval in milliseconds
+`imageSpeedup` | How much image loading is sped up
 
 If you want your cursor to be visible you will need to add styling:
 
 
     ```css
 	.cursor:before { content: "."; background: white; color: white; }
+	.blink .cursor:before { content: ""; }
 	```
 
 (I'll be happy if someone can tell me how to get rid of the dot so
 that it works for both DIV and PRE elements and has a matching width
 to the element -- non-breaking space works but results in too wide
 cursor.)
-
 
 ## HTML controls
 
@@ -99,6 +103,22 @@ For example:
 	<p data-pause-secs="10">10 second pause</p>
 	<p data-bps="19200">Upgrade!!!!</p>
 	```
+
+## Image loading
+
+IMG elements are shown in a way that simulates pixel-by-pixel loading
+over a slow link. It assumes that each pixel is one byte (8 bits)
+approximating 8-bit indexed color image pixel density and calculates
+how many pixels can be shown. (This is not an exact calculation and
+neither it is meant to be.)
+
+Then this value is multiplied by `imageSpeedup` parameter which by
+default is 100!! This is because image loading at *true speeds* would
+be horrendously slow and would move the "slow loading" effect from
+curiosity to purely tediously horrendous.
+
+You can change the `imageSpeedup` parameter via options to 1 if you
+wish. To. Wait. Forever.
 
 ## License
 
