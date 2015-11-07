@@ -8,13 +8,13 @@ pre {
     font-size: 12px;
 }
 
-#input, .input {
+#input, .input, .jquery-input {
     border: 1px dotted lightgreen;
     padding: 10px;
     margin: 5px 0;
 }
 
-#output, .output {
+#output, .output, .jquery-output {
     border: 1px dotted pink;
     padding: 10px;
     margin: 5px 0;

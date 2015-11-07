@@ -78,9 +78,34 @@ class Modemizr
   # given then its **child nodes** are used, not the node itself.
   ###
   constructor: (output, input) ->
+    if not output?
+      return
+
+    if not input?
+      input = output
+
     @output = [output]
+
+    ###
+    # If input is the same as output, grab node content first and then
+    # clear it.
+    ###
+    if output == input
+      nodes = Array.prototype.slice.call input.childNodes
+      while (child = input.firstChild)?
+        input.removeChild child
+      input = nodes
+
+    ###
+    # If we are passed a plain input node grab its children only.
+    ###
     if not (input instanceof Array)
       input = input.childNodes
+
+    ###
+    # ... and remember to use slice to ensure it is a true array, not
+    # an object of childNodes
+    ###
     @input = [Array.prototype.slice.call input]
     log "output", @output, "input", @input
 
@@ -248,10 +273,22 @@ class Modemizr
     return @step()
 
 
+###
+# Global initializer
+###
 window.modemizr = (output, input) ->
   (new Modemizr output, input).start()
 
+###
+# If jQuery is available, add a jQuery plugin.
+###
+if ($ = window.jQuery)?
+  $.fn.modemizr = (options) ->
+    return this.each () ->
+      (new Modemizr this, this, options).start()
 
+
+# XXX move this as an option
 window.blink = (elt) ->
   tick = () =>
     elt.classList.toggle "blink"
