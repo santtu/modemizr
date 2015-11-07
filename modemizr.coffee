@@ -143,6 +143,7 @@ class Image extends Processor
 
   tick: () ->
     if @pos >= @image.height * @image.width
+      @image.style.webkitClipPath = @image.style.clipPath = ""
       return @done = true
 
     pixels = @pixelsPending()

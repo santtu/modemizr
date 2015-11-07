@@ -174,6 +174,7 @@
     Image.prototype.tick = function() {
       var pixels;
       if (this.pos >= this.image.height * this.image.width) {
+        this.image.style.webkitClipPath = this.image.style.clipPath = "";
         return this.done = true;
       }
       pixels = this.pixelsPending();
@@ -285,7 +286,6 @@
       }
       this.output = [output];
       this.root = output;
-      console.log("options", options);
       if (!((options != null) && (options.show != null)) || options.show) {
         if (this.root.style.display === "none") {
           this.root.style.display = "block";
