@@ -1,0 +1,50 @@
+---
+layout: default
+---
+
+<script src="https://rawgit.com/santtu/modemizr/master/modemizr.js"></script>
+<style>
+  .shadow {
+    -webkit-box-shadow: 6px 4px 91px -20px rgba(0,0,0,0.75);
+    -moz-box-shadow: 6px 4px 91px -20px rgba(0,0,0,0.75);
+    box-shadow: 6px 4px 91px -20px rgba(0,0,0,0.75);
+  }
+  .blink .cursor:before { content: ""; }
+  .cursor:before { content: "_"; background: black; color: black; }
+</style>
+<div class="home">
+  <div id="example">
+    <pre>$ <span data-pause-secs="5"></span>info modemizr</pre>
+
+    <p data-pause-secs=".5" data-bps="300">Modemizr is a simple Javascript library that
+      simulates the "old BBS with slow modems" effect on HTML
+      pages.</p>
+
+    <p>It can handle <b>arbitrary</b> HTML elements with
+      <span style="color: white; background: black;">
+	styling</span> as well as things such
+      as <span data-bps="9600"></span> changing output speeds,
+      pausing <span data-pause-secs="0.5">.</span><span data-pause-secs="0.5">.</span><span data-pause-secs="0.5">.</span><span data-pause-secs="0.5">.</span>
+      and even supports "slow loading style" images.</p>
+
+    <div class="shadow" style="max-width: 75%; margin: 0 auto;"><img src="images/starry-sky.jpg" alt="Starry Sky, by Greg Rakozy, https://unsplash.com/photos/oMpAz-DN-9I"></div>
+
+    <br/>
+
+    <h2 data-bps="300">Where to get it</h2>
+    <pre>$ <span data-pause-secs="1"></span>git clone https://github.com/santtu/modemizr.git
+$ <span data-pause-secs="1"></span>open <a href="https://github.com/santtu/modemizr">https://github.com/santtu/modemizr</a></pre>
+
+
+    <h2>Background</h2>
+
+    Modemizr was inspired
+    by <a href="https://asciinema.org/">Asciinema</a>.
+  </div>
+
+</div>
+
+<script>
+  window.addEventListener("load", function() {
+  modemizr(document.getElementById("example"), null, {cursor: true, blink: true}); });
+</script>
