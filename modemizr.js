@@ -285,6 +285,11 @@
       }
       this.output = [output];
       this.root = output;
+      if ((options != null) && (options.show != null) && options.show) {
+        if (this.root.style.display === "none") {
+          this.root.style.display = "block";
+        }
+      }
 
       /*
        * If input is the same as output, grab node content first and then

@@ -229,6 +229,10 @@ class Modemizr
     @output = [output]
     @root = output
 
+    if options? and options.show? and options.show
+      if @root.style.display == "none"
+        @root.style.display = "block"
+
     ###
     # If input is the same as output, grab node content first and then
     # clear it.

@@ -59,7 +59,8 @@ plugin (the values below are the defaults):
     bps: 300,
     cursor: false,
     blink: false,
-    imageSpeedup: 100
+    imageSpeedup: 100,
+	show: true
 }
 ```
 
@@ -69,6 +70,7 @@ Option | Description
 `cursor` | Either `false`, `true` or a string. Adds a cursor `SPAN` element at a place where the cursor is. The element has class of either `"cursor"` or the `cursor` option value if given as a string.
 `blink` | Enable blinking cursor by setting `true` or the blink interval in milliseconds
 `imageSpeedup` | How much image loading is sped up
+`show`| Whether to enable automatic de-hiding of the output element
 
 If you want your cursor to be visible you will need to add styling:
 
