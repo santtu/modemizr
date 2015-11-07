@@ -104,13 +104,18 @@
  */
 
 (function() {
-  var $, Image, Modemizr, Pause, Processor, log, stringp, time,
+  var $, Image, Modemizr, Pause, Processor, log, spacep, stringp, time,
     slice = [].slice,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
+    hasProp = {}.hasOwnProperty,
+    indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   stringp = function(s) {
     return typeof s === 'string' || s instanceof String;
+  };
+
+  spacep = function(s) {
+    return s === " " || s === "\t" || s === "\n" || s === "\r" || s === " ";
   };
 
   log = function() {
@@ -245,6 +250,10 @@
     Modemizr.prototype.output = [];
 
     Modemizr.prototype.root = null;
+
+    Modemizr.prototype.space = false;
+
+    Modemizr.prototype.pre = false;
 
 
     /*
@@ -490,7 +499,7 @@
      */
 
     Modemizr.prototype.step = function() {
-      var bps, chars, current, img, input, node, output, pause, ref, secs;
+      var bps, chars, current, e, img, input, node, output, pause, ref, secs;
       if (this.input.length === 0 || this.output.length === 0) {
         while (this.output.length) {
           this.pop_output();
@@ -526,6 +535,13 @@
           return this.step();
         }
         log("plain string", current);
+        if (!this.pre && spacep(current[0])) {
+          if (this.space) {
+            input[0] = current.slice(1);
+            return this.step();
+          }
+        }
+        this.space = spacep(current[0]);
         output.textContent += current[0];
         input[0] = current.slice(1);
         return;
@@ -549,6 +565,16 @@
         node = current.cloneNode();
         node.textContent = "";
         this.push_both(node, [current.textContent]);
+        this.pre = indexOf.call((function() {
+          var i, len, ref, results;
+          ref = this.output;
+          results = [];
+          for (i = 0, len = ref.length; i < len; i++) {
+            e = ref[i];
+            results.push((e != null) && e.tagName);
+          }
+          return results;
+        }).call(this), 'PRE') >= 0;
         return this.step();
       }
       if (current.nodeType === 8) {

@@ -103,8 +103,12 @@
 ###
 
 stringp = (s) -> typeof s == 'string' or s instanceof String
+spacep = (s) -> s in [" ", "\t", "\n", "\r", " "]
+
 log = (args...) ->
 #  console.log.apply(console, args)
+
+
 
 time = () -> (new Date()).getTime()
 
@@ -194,6 +198,8 @@ class Modemizr
   ###
   output: []
   root: null
+  space: false
+  pre: false
 
   ###
   # Input is an stack of arrays. When an empty array is encountered,
@@ -422,6 +428,13 @@ class Modemizr
 
       log "plain string", current
 
+      if not @pre and spacep current[0]
+        if @space
+          input[0] = current.slice(1)
+          return @step()
+
+      @space = spacep current[0]
+
       # This will output one character.
       output.textContent += current[0]
       input[0] = current.slice(1)
@@ -448,6 +461,13 @@ class Modemizr
       node.textContent = ""
 
       @push_both node, [current.textContent]
+
+      # Check if there is a PRE element in the output stack. Since
+      # there is never an (non-processing) node pushed on top of
+      # #Text() the @pre flag will be recalculated if PRE pops out,
+      # since it will require another #Text node to be pushed in.
+      @pre = 'PRE' in (e? and e.tagName for e in @output)
+
       return @step()
 
     if current.nodeType == 8

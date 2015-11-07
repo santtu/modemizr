@@ -124,6 +124,31 @@ loading" effect from curiosity to purely tedious horror.
 You can change the `imageSpeedup` parameter via options to 1 if you
 wish. To. Wait. Forever.
 
+## Whitespace and PRE tags
+
+Normally whitespace in HTML does not matter, so from visual point of
+view the two following DIVs are the same:
+
+```html
+<div>a b</div>
+<div>a                                                  b</div>
+```
+
+However these two are not:
+
+```html
+<pre>a b</pre>
+<pre>a                                                  b</pre>
+```
+
+Modemizr will output all whitespace characters (spaces, newlines etc.)
+when it is inside a PRE output element. Otherwise it will ignore (skip
+over) multiple whitspace characters in the input.
+
+This heuristic is not fool-proof as it is possible to both turn PRE
+elements into non-whitespace-conserving element and other elements to
+whitespace-conserving via CSS `white-space` property.
+
 ## License
 
 [MIT License](http://santtu.mit-license.org/) © Santeri Paavolainen
