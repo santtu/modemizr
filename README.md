@@ -22,12 +22,12 @@ For samples see `tests/` directory.
 
    ```javascript
    modemizr(document.getElementById("output"),
-            document.getElementById("input"),
-            { ... options ... });
+             document.getElementById("input"),
+             { ... options ... });
    ```
 
-   You can also omit the input element in which case the input element
-   is used in-place:
+   You can also omit the input element in which case the output element
+   is used in-placep:
 
    ```javascript
    modemizr(document.getElementById("output"));
@@ -79,7 +79,7 @@ If you want your cursor to be visible you will need to add styling:
 
 (I'll be happy if someone can tell me how to get rid of the dot so
 that it works for both DIV and PRE elements and has a matching width
-to the element -- non-breaking space works but results in too wide
+to the element — non-breaking space works but results in too wide
 cursor.)
 
 ## HTML controls
