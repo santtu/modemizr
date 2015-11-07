@@ -123,9 +123,9 @@
   };
 
   Processor = (function() {
-    function Processor(master1, parent1) {
+    function Processor(master1, parentNode) {
       this.master = master1;
-      this.parent = parent1;
+      this.parentNode = parentNode;
     }
 
     Processor.prototype.done = true;

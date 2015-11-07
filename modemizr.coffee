@@ -109,7 +109,7 @@ log = (args...) ->
 time = () -> (new Date()).getTime()
 
 class Processor
-  constructor: (@master, @parent) ->
+  constructor: (@master, @parentNode) ->
   done: true
 
 class Image extends Processor
