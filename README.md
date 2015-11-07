@@ -111,10 +111,10 @@ approximating 8-bit indexed color image pixel density and calculates
 how many pixels can be shown. (This is not an exact calculation and
 neither it is meant to be.)
 
-Then this value is multiplied by `imageSpeedup` parameter which by
-default is 100!! This is because image loading at *true speeds* would
-be horrendously slow and would move the "slow loading" effect from
-curiosity to purely tediously horrendous.
+After this the number of pixels shown is multiplied by `imageSpeedup`
+parameter which by default is 100. This is because image loading at
+*true speeds* would be horrendously slow and would move the "slow
+loading" effect from curiosity to purely tedious horror.
 
 You can change the `imageSpeedup` parameter via options to 1 if you
 wish. To. Wait. Forever.
