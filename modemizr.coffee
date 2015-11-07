@@ -229,8 +229,6 @@ class Modemizr
     @output = [output]
     @root = output
 
-    console.log "options", options
-
     if not (options? and options.show?) or options.show
       if @root.style.display == "none"
         @root.style.display = "block"
