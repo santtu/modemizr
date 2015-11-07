@@ -152,3 +152,9 @@ whitespace-conserving via CSS `white-space` property.
 ## License
 
 [MIT License](http://santtu.mit-license.org/) © Santeri Paavolainen
+
+## Known bugs
+
+* Slow image loading doesn't work in Firefox. Images are shown
+  completely straight away. The delay still occurs, so there is a
+  pause after the image is shown.

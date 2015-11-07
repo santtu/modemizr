@@ -386,6 +386,10 @@
       return chars;
     };
 
+    Modemizr.prototype.cursorClass = function() {
+      return (stringp(this.cursor)) && this.cursor || "cursor";
+    };
+
     Modemizr.prototype.tick = function() {
       var chars, now, results;
       if (this.input.length === 0) {
@@ -433,7 +437,7 @@
       var cursor, cursors, output, results;
       output = this.current_output();
       if (output.getElementsByClassName != null) {
-        cursors = output.getElementsByClassName("cursor");
+        cursors = output.getElementsByClassName(this.cursorClass());
         results = [];
         while (cursors.length > 0) {
           cursor = cursors[0];
@@ -456,7 +460,7 @@
       output = this.current_output();
       if (((output.nodeType != null) && output.nodeType === 3) || (output instanceof Processor)) {
         cursor = document.createElement("span");
-        cursor.className = (stringp(this.cursor)) && this.cursor || "cursor";
+        cursor.className = this.cursorClass();
         return output.parentNode.appendChild(cursor);
       }
     };

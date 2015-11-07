@@ -306,6 +306,9 @@ class Modemizr
     chars = Math.round(elapsed / (1000.0 / (@bps / 10.0)))
     chars
 
+  cursorClass: () ->
+    (stringp @cursor) and @cursor or "cursor"
+
   tick: () ->
     if @input.length == 0
       @stop()
@@ -340,7 +343,7 @@ class Modemizr
   pop_cursor: () ->
     output = @current_output()
     if output.getElementsByClassName?
-      cursors = output.getElementsByClassName("cursor")
+      cursors = output.getElementsByClassName(@cursorClass())
       while cursors.length > 0
         cursor = cursors[0]
         cursor.remove()
@@ -355,7 +358,7 @@ class Modemizr
     output = @current_output()
     if (output.nodeType? and output.nodeType == 3) or (output instanceof Processor)
       cursor = document.createElement "span"
-      cursor.className = (stringp @cursor) and @cursor or "cursor"
+      cursor.className = @cursorClass()
       output.parentNode.appendChild cursor
 
   push_both: (node, content) ->
