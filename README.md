@@ -54,14 +54,14 @@ For options see below.
 You can pass an options hash for both `modemizr` and to the jQuery
 plugin (the values below are the defaults):
 
-    ```javascript
-    {
-        bps: 300,
-        cursor: false,
-        blink: false,
-        imageSpeedup: 100
-    }
-    ```
+```javascript
+{
+    bps: 300,
+    cursor: false,
+    blink: false,
+    imageSpeedup: 100
+}
+```
 
 Option | Description
 --- | ---
@@ -72,11 +72,10 @@ Option | Description
 
 If you want your cursor to be visible you will need to add styling:
 
-
-    ```css
-    .cursor:before { content: "."; background: white; color: white; }
-    .blink .cursor:before { content: ""; }
-    ```
+```css
+.cursor:before { content: "."; background: white; color: white; }
+.blink .cursor:before { content: ""; }
+```
 
 (I'll be happy if someone can tell me how to get rid of the dot so
 that it works for both DIV and PRE elements and has a matching width
@@ -98,11 +97,11 @@ Attribute | Description
 
 For example:
 
-    ```html
-    <p data-pause-chars="10">10 char pause</p>
-    <p data-pause-secs="10">10 second pause</p>
-    <p data-bps="19200">Upgrade!!!!</p>
-    ```
+```html
+<p data-pause-chars="10">10 char pause</p>
+<p data-pause-secs="10">10 second pause</p>
+<p data-bps="19200">Upgrade!!!!</p>
+```
 
 ## Image loading
 
