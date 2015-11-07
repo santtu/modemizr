@@ -1,5 +1,8 @@
 # modemizr
 
+See modemizr in action at
+[http://santtu.github.io/modemizr/](http://santtu.github.io/modemizr/).
+
 modemizr is a simple Javascript extension that simulates the effect of
 reading the page using a modem, typically at low bits-per-second (bps)
 rates of 300 to 9600 (you are probably browsing this page on a
