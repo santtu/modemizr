@@ -15,6 +15,6 @@
     window.addEventListener("load", function() {
         var input = document.getElementsByClassName("input")[0];
         var output = document.getElementsByClassName("output")[0];
-        var m = modemizr(output, input);
+        var m = modemizr(output, input, window.modemizr_options);
     });
 })();

@@ -1,20 +1,23 @@
 body {
     background: #222;
-    color: white;
     padding: 5%;
+}
+
+body, a {
+    color: white;
 }
 
 pre {
     font-size: 12px;
 }
 
-#input, .input, .jquery-input {
+#input, .input, .jquery-input, .style-input {
     border: 1px dotted lightgreen;
     padding: 10px;
     margin: 5px 0;
 }
 
-#output, .output, .jquery-output {
+#output, .output, .jquery-output, .style-output {
     border: 1px dotted pink;
     padding: 10px;
     margin: 5px 0;

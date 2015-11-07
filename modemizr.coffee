@@ -38,7 +38,7 @@ time = () -> (new Date()).getTime()
 class Pause
   ticks: 0
 
-  constructor: (@chars, @secs) ->
+  constructor: (@chars, @secs, options) ->
     @start = time()
     @done = @donep()
 
@@ -77,7 +77,10 @@ class Modemizr
   # array of elements, or a single element. If a single element is
   # given then its **child nodes** are used, not the node itself.
   ###
-  constructor: (output, input) ->
+  constructor: (output, input, options) ->
+    if options? and options.bps?
+      @bps = options.bps
+
     if not output?
       return
 
@@ -99,7 +102,7 @@ class Modemizr
     ###
     # If we are passed a plain input node grab its children only.
     ###
-    if not (input instanceof Array)
+    if not (input instanceof Array) and input.childNodes?
       input = input.childNodes
 
     ###
@@ -276,8 +279,8 @@ class Modemizr
 ###
 # Global initializer
 ###
-window.modemizr = (output, input) ->
-  (new Modemizr output, input).start()
+window.modemizr = (output, input, options) ->
+  (new Modemizr output, input, options).start()
 
 ###
 # If jQuery is available, add a jQuery plugin.

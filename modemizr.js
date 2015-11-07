@@ -49,7 +49,7 @@
   Pause = (function() {
     Pause.prototype.ticks = 0;
 
-    function Pause(chars1, secs1) {
+    function Pause(chars1, secs1, options) {
       this.chars = chars1;
       this.secs = secs1;
       this.start = time();
@@ -100,8 +100,11 @@
      * given then its **child nodes** are used, not the node itself.
      */
 
-    function Modemizr(output, input) {
+    function Modemizr(output, input, options) {
       var child, nodes;
+      if ((options != null) && (options.bps != null)) {
+        this.bps = options.bps;
+      }
       if (output == null) {
         return;
       }
@@ -125,7 +128,7 @@
       /*
        * If we are passed a plain input node grab its children only.
        */
-      if (!(input instanceof Array)) {
+      if (!(input instanceof Array) && (input.childNodes != null)) {
         input = input.childNodes;
       }
 
@@ -325,8 +328,8 @@
    * Global initializer
    */
 
-  window.modemizr = function(output, input) {
-    return (new Modemizr(output, input)).start();
+  window.modemizr = function(output, input, options) {
+    return (new Modemizr(output, input, options)).start();
   };
 
 

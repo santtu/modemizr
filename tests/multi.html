@@ -1,0 +1,33 @@
+<html>
+<body>
+  <script src="test.js"></script>
+  <div id="in1" class="style-input">Cras quis odio purus. Sed finibus
+    condimentum tempor. Donec semper viverra risus in
+    fermentum. Maecenas euismod felis id quam tincidunt sodales. Donec
+    a metus at quam eleifend malesuada efficitur a arcu. Sed mattis in
+    elit tempus tincidunt.</div>
+  <div id="out1" class="style-output"></div>
+  <div id="in2" class="style-input">Cras quis odio purus. Sed finibus
+    condimentum tempor. Donec semper viverra risus in
+    fermentum. Maecenas euismod felis id quam tincidunt sodales. Donec
+    a metus at quam eleifend malesuada efficitur a arcu. Sed mattis in
+    elit tempus tincidunt.</div>
+  <div id="out2" class="style-output"></div>
+  <div id="in3" class="style-input">Cras quis odio purus. Sed finibus
+    condimentum tempor. Donec semper viverra risus in
+    fermentum. Maecenas euismod felis id quam tincidunt sodales. Donec
+    a metus at quam eleifend malesuada efficitur a arcu. Sed mattis in
+    elit tempus tincidunt.</div>
+  <div id="out3" class="style-output"></div>
+
+  <script type="text/javascript">
+    window.addEventListener("load", function() {
+        for (var i = 1; i != 4; i++) {
+        modemizr(document.getElementById("out" + i),
+                 document.getElementById("in" + i));
+        }
+    });
+  </script>
+
+</body>
+</html>
